@@ -32,6 +32,7 @@ class Signal(Model):
     class Meta:
         database = db
         table_name = 'signal'
+        schema = 'algo'
 
 
 
@@ -42,6 +43,7 @@ class Config(Model):
     class Meta:
         database = db
         table_name = 'config'
+        schema = 'algo'
 
 
 class Latest_15_min_candle(Model):
@@ -53,9 +55,10 @@ class Latest_15_min_candle(Model):
     class Meta:
         database = db
         table_name = 'latest_15_min_candle'
+        schema = 'algo'
 
 
-
+db.execute_sql("CREATE SCHEMA IF NOT EXISTS algo;")
 db.create_tables([Signal,Config,Latest_15_min_candle], safe=True)
 
 if __name__ == "__main__":
