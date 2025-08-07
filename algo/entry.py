@@ -108,7 +108,8 @@ if signal:
             logger.info("Bearish trend detected")
             logger.info(f"time = {latest_15_min_candle['time']} , latest_15_min_candle close = {latest_15_min_candle['intc']} , signal['low'] = {signal['low']}")
             
-            if float(latest_15_min_candle['intc']) < signal['low']: 
+            # if float(latest_15_min_candle['intc']) < signal['low']: 
+            if 23000 < signal['low']: #888
                 logger.info("Bearish condition met, executing trade")
                 
                 ret = api_obj.get_quotes(exchange="NSE", token="26000")
