@@ -23,7 +23,7 @@ index_data_df.ta.supertrend(length=10, multiplier=3.5, append=True)
 
 #-1 = bearish trend, 1 = bullish trend
 
-second_last_candle = index_data_df.iloc[0]
+second_last_candle = index_data_df.iloc[-2]
 last_candle = index_data_df.iloc[-1]
 
 pre_trend = second_last_candle['SUPERTd_10_3.5']
