@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RSI Strategy</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/supertrend.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+
+</head>
+
+<body>
+    <div class="header">
+        <div class="logo">
+            <p>RSI Strategy {{version}}</p>
+        </div>
+        <div class="controls">
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider round">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Top Section - Market Data -->
+        <div class="top-section">
+            <!-- OHLC Table -->
+            <div class="market-data-card">
+                <div class="card-title">Latest trend change</div>
+                <table class="data-table" id="frontend-header-table">
+                    <tbody>
+                        <tr>
+                            <td>Time</td>
+                            <td id="stat_time">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Open</td>
+                            <td id="stat_open">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>High</td>
+                            <td id="stat_high">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Low</td>
+                            <td id="stat_low">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>close</td>
+                            <td id="stat_close">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Supertrend</td>
+                            <td id="stat_supertrend">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Trend</td>
+                            <td id="stat_trend">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Trade</td>
+                            <td id="stat_trade">Loading ....</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MTM LTP Table -->
+            <div class="market-data-card">
+                <div class="card-title">Latest 15 min candle</div>
+                <table class="data-table" id="m2m-table">
+                    <tbody>
+                        <tr>
+                            <td>Time</td>
+                            <td id="latest_candle_time">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Open</td>
+                            <td id="latest_candle_open">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>High</td>
+                            <td id="latest_candle_high">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>Low</td>
+                            <td id="latest_candle_low">Loading ....</td>
+                        </tr>
+                        <tr>
+                            <td>close</td>
+                            <td id="latest_candle_close">Loading ....</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% if cm_pnl_display %}
+                    <br>
+                    <p style="text-align: center;">Cumulative pnl : <span id="cum_pnl"></span></p>
+                    <p style="text-align: center;"> <span id="cum_pnl_msg"></span></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bottom Section - Configuration and Orders -->
+        <div class="bottom-section">
+            <!-- Configuration Section -->
+            <div class="config-section">
+                <div class="card-title">Configuration Settings</div>
+                <form id="updateForm" onsubmit="event.preventDefault(); updateConfig();">
+
+                  {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="sell_strike">
+                            <i class="fas fa-calculator"></i>
+                            Sell strike
+                        </label>
+                        <select id="sell_strike" name="sell_strk" required="" class="form-control">
+                            <option value="OTM1" {% if sell_strike == "OTM1" %}selected{% endif %}> OTM 1</option>
+                            <option value="OTM2" {% if sell_strike == "OTM2" %}selected{% endif %}> OTM 2</option>
+                            <option value="OTM3" {% if sell_strike == "OTM3" %}selected{% endif %}> OTM 3</option>
+                            <option value="OTM4" {% if sell_strike == "OTM4" %}selected{% endif %}> OTM 4</option>
+                            <option value="OTM5" {% if sell_strike == "OTM5" %}selected{% endif %}> OTM 5</option>
+                            <option value="OTM6" {% if sell_strike == "OTM6" %}selected{% endif %}> OTM 6</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buy_strike">
+                            <i class="fas fa-calculator"></i>
+                            Buy strike
+                        </label>
+                        <select id="buy_strike" name="buy_strk" required="" class="form-control">
+                            <option value="OTM1" {% if buy_strike == "OTM1" %}selected{% endif %}> OTM 1</option>
+                            <option value="OTM2" {% if buy_strike == "OTM2" %}selected{% endif %}> OTM 2</option>
+                            <option value="OTM3" {% if buy_strike == "OTM3" %}selected{% endif %}> OTM 3</option>
+                            <option value="OTM4" {% if buy_strike == "OTM4" %}selected{% endif %}> OTM 4</option>
+                            <option value="OTM5" {% if buy_strike == "OTM5" %}selected{% endif %}> OTM 5</option>
+                            <option value="OTM6" {% if buy_strike == "OTM6" %}selected{% endif %}> OTM 6</option>
+                        </select>
+                    </div>
+                   
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i>
+                        Update Config
+                    </button>
+                </form>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="orders-section">
+                <div class="card-title">Order Table</div>
+                <div class="orders-table-container">
+                    <table class="order-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Prd type</th>
+                                <th>Type</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Order</th>
+                                <th>Remark</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderbook_data">
+                            <tr>
+                                <td colspan="9" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading orders...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        
+    </script>
+
+    <div class="notification-container"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+            <script src="{% static 'js/supertrend.js' %}"></script>
+
+  
+</body>
+</html>
