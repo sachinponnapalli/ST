@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Chitti Algo</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/chitti_supertrend_buffer_with_limit_order.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+ .error-message {
+        color: red;
+        margin-bottom: 1em;
+    }
+    
+    .field-error {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 0.2em;
+    }
+
+    .error-message {
+    text-align: center; /* Center-align the text */
+    color: red; /* Make it noticeable */
+    margin: 5px 0; /* Add spacing around the error */
+    padding: 5px; /* Add some padding for a clean look */
+    /* border: 1px solid red; Optional: Highlight the error container */
+    border-radius: 5px; /* Rounded corners */
+    /* background-color: #ffe6e6; Optional: Light red background */
+    max-width: 400px; /* Optional: Limit the width */
+    margin-left: auto; /* Center horizontally */
+    margin-right: auto; /* Center horizontally */
+}
+
+</style>
+
+   
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <p id="name">Chitti Algo</p>
+        </div>
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox">
+                <div class="slider round">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <div class="login-container">
+        <h1><i class="fas fa-user-circle"></i> Login</h1>
+        <form method="post">
+            {% csrf_token %}
+        
+            <!-- Display non-field errors (e.g., invalid credentials) -->
+            {% if form.non_field_errors %}
+                <div class="error-message">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        
+            <!-- Render form fields -->
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">
+                        <i class="fas fa-{% if field.name == 'username' %}user{% else %}key{% endif %}"></i>
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    <!-- Display field-specific errors -->
+                    {% if field.errors %}
+                        <div class="field-error">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Dark mode toggle functionality
+        const toggleSwitch = document.querySelector('#checkbox');
+        const currentTheme = localStorage.getItem('theme');
+
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true;
+            }
+        }
+
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        toggleSwitch.addEventListener('change', switchTheme);
+    </script>
+
+
+    <!-- Dynamically changing Title and header name -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchParams = new URLSearchParams(window.location.search);
+            const nextParam = searchParams.get("next");
+            const nameElement = document.getElementById("name");
+
+            if (nextParam && nextParam.includes("/chitti-algo/delta-range-filter/")) {
+                document.title = "Delta Range Filter";
+                nameElement.textContent = "Delta Range Filter";
+            } else {
+                document.title = "Login - Chitti Algo";
+                nameElement.textContent = "Chitti Algo";
+            }
+        });
+    </script>
+
+</body>
+</html>

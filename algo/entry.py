@@ -44,6 +44,33 @@ if signal:
                 config = list(Config.select().where(Config.id == 1).dicts())
                 config = config[0]
 
+                #buy trade execution
+                buy_strike_position = config['buy_strike'] 
+
+                req_buy_strike = abs(index_and_position['NIFTY'][buy_strike_position] - atm_strike)
+                logger.info(f"buy order strike: {req_buy_strike}")
+                buy_contracts = api_obj.searchscrip(exchange="NFO", searchtext=f"NIFTY {req_buy_strike} PE")
+
+                now = datetime.now()
+                current_day = now.weekday()  # Monday=0, ..., Friday=4
+                current_time = now.time()
+
+                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("8:30", "%H:%M").time()):
+                    logger.info("its friday or monday before 2pm, executing latest first expiry")
+                    buy_contract = buy_contracts['values'][0]
+                else:
+                    logger.info("its not friday or monday before 2pm, executing second expiry")
+                    buy_contract = buy_contracts['values'][1]
+                logger.info(f"buy_contract: {buy_contract}")
+                #api_obj.place_order(buy_contract)  # pending , No clarity on how to place Normal order
+                order_place_response = api_obj.place_order(buy_or_sell='B', product_type='M',
+                        exchange='NFO', tradingsymbol=buy_contract['tsym'], 
+                        quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
+                        retention='DAY', remarks='ENTRY')
+                
+                logger.info(f"Order placed response: {order_place_response}")
+                #buy order execution successful
+
                 #sell trade execution
                 sell_strike_position = config['sell_strike'] 
 
@@ -55,7 +82,7 @@ if signal:
                 current_day = now.weekday()  # Monday=0, ..., Friday=4
                 current_time = now.time()
 
-                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("14:00", "%H:%M").time()):
+                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("8:30", "%H:%M").time()):
                     logger.info("its friday or monday before 2pm, executing latest first expiry")
                     sell_contract = sell_contracts['values'][0]
                 else:
@@ -71,34 +98,6 @@ if signal:
                 logger.info(f"Order placed response: {order_place_response}")
 
                 #sell order execution successful
-
-
-
-                #buy trade execution
-                buy_strike_position = config['buy_strike'] 
-
-                req_buy_strike = abs(index_and_position['NIFTY'][buy_strike_position] - atm_strike)
-                logger.info(f"buy order strike: {req_buy_strike}")
-                buy_contracts = api_obj.searchscrip(exchange="NFO", searchtext=f"NIFTY {req_buy_strike} PE")
-
-                now = datetime.now()
-                current_day = now.weekday()  # Monday=0, ..., Friday=4
-                current_time = now.time()
-
-                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("14:00", "%H:%M").time()):
-                    logger.info("its friday or monday before 2pm, executing latest first expiry")
-                    buy_contract = buy_contracts['values'][0]
-                else:
-                    logger.info("its not friday or monday before 2pm, executing second expiry")
-                    buy_contract = buy_contracts['values'][1]
-                logger.info(f"buy_contract: {buy_contract}")
-                #api_obj.place_order(buy_contract)  # pending , No clarity on how to place Normal order
-                order_place_response = api_obj.place_order(buy_or_sell='B', product_type='M',
-                        exchange='NFO', tradingsymbol=buy_contract['tsym'], 
-                        quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
-                        retention='DAY', remarks='ENTRY')
-                
-                logger.info(f"Order placed response: {order_place_response}")
 
                 query = Signal.update(trade=True).where(Signal.id == 1)
                 query.execute()
@@ -119,37 +118,7 @@ if signal:
                 config = list(Config.select().where(Config.id == 1).dicts())
                 config = config[0]
                 
-                #sell trade execution
-                sell_strike_position = config['sell_strike'] 
-
-                req_sell_strike = index_and_position['NIFTY'][sell_strike_position] + atm_strike
-                logger.info(f"sell order strike: {req_sell_strike}")
-                sell_contracts = api_obj.searchscrip(exchange="NFO", searchtext=f"NIFTY {req_sell_strike} CE")
-
-                now = datetime.now()
-                current_day = now.weekday()  # Monday=0, ..., Friday=4
-                current_time = now.time()
-
-                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("14:00", "%H:%M").time()):
-                    logger.info("its friday or monday before 2pm, executing latest first expiry")
-                    sell_contract = sell_contracts['values'][0]
-                else:
-                    logger.info("its not friday or monday before 2pm, executing second expiry")
-                    sell_contract = sell_contracts['values'][1]
-                logger.info(f"sell_contract: {sell_contract}")
-                #api_obj.place_order(sell_contract)  # pending , No clarity on how to place Normal order
-                order_place_response = api_obj.place_order(buy_or_sell='S', product_type='M',
-                        exchange='NFO', tradingsymbol=sell_contract['tsym'], 
-                        quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
-                        retention='DAY', remarks='ENTRY')
-                
-                logger.info(f"Order placed response: {order_place_response}")
-
-
-                #sell order execution successful
-                
-
-
+            
                 #buy trade execution
                 buy_strike_position = config['buy_strike'] 
 
@@ -161,7 +130,7 @@ if signal:
                 current_day = now.weekday()  # Monday=0, ..., Friday=4
                 current_time = now.time()
 
-                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("14:00", "%H:%M").time()):
+                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("8:30", "%H:%M").time()):
                     logger.info("its friday or monday before 2pm, executing latest first expiry")
                     buy_contract = buy_contracts['values'][0]
                 else:
@@ -176,11 +145,38 @@ if signal:
                         retention='DAY', remarks='ENTRY')
                 
                 logger.info(f"Order placed response: {order_place_response}")
+                #buy trade execution successful 
+
+                #sell trade execution
+                sell_strike_position = config['sell_strike'] 
+
+                req_sell_strike = index_and_position['NIFTY'][sell_strike_position] + atm_strike
+                logger.info(f"sell order strike: {req_sell_strike}")
+                sell_contracts = api_obj.searchscrip(exchange="NFO", searchtext=f"NIFTY {req_sell_strike} CE")
+
+                now = datetime.now()
+                current_day = now.weekday()  # Monday=0, ..., Friday=4
+                current_time = now.time()
+
+                if current_day == 4 or (current_day == 0 and current_time < datetime.strptime("8:30", "%H:%M").time()):
+                    logger.info("its friday or monday before 2pm, executing latest first expiry")
+                    sell_contract = sell_contracts['values'][0]
+                else:
+                    logger.info("its not friday or monday before 2pm, executing second expiry")
+                    sell_contract = sell_contracts['values'][1]
+                logger.info(f"sell_contract: {sell_contract}")
+                #api_obj.place_order(sell_contract)  # pending , No clarity on how to place Normal order
+                order_place_response = api_obj.place_order(buy_or_sell='S', product_type='M',
+                        exchange='NFO', tradingsymbol=sell_contract['tsym'], 
+                        quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
+                        retention='DAY', remarks='ENTRY')
+                
+                logger.info(f"Order placed response: {order_place_response}")
+                #sell order execution successful
 
                 query = Signal.update(trade=True).where(Signal.id == 1)
                 query.execute()
 
-                #buy trade execution successful 
 
         # Here you can add your trading logi
 

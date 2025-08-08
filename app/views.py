@@ -6,8 +6,12 @@ from loguru import logger
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse , JsonResponse
 from algo.api_utils import *
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
+
+@login_required
 def Supertrend_algo(request):
     config = list(Config.select().where(Config.id == 1).dicts())
     config = config[0]
