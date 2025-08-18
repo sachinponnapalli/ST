@@ -5,6 +5,10 @@ from utils import *
 
 signal = list(Signal.select().where(Signal.id == 1).dicts())
 
+def convert_to_datetime(date_str: str) -> datetime:
+    # Format: day-month-year hour:minute:second
+    return datetime.strptime(date_str, "%d-%m-%Y %H:%M:%S")
+
 if signal:
     logger.info("Signal data found")
     signal = signal[0]
@@ -19,7 +23,7 @@ if signal:
 
         Latest_15_min_candle.truncate_table(restart_identity=True)
         Latest_15_min_candle.create(
-            datetime = latest_15_min_candle['time'],
+            datetime = convert_to_datetime(latest_15_min_candle['time']),
             open = latest_15_min_candle['into'],
             high = latest_15_min_candle['inth'],
             low = latest_15_min_candle['intl'],
