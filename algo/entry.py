@@ -95,7 +95,7 @@ if signal:
                 logger.info(f"sell_contract: {sell_contract}")
                 #api_obj.place_order(sell_contract)  # pending , No clarity on how to place Normal order
                 order_place_response = api_obj.place_order(buy_or_sell='S', product_type='M',
-                        exchange='NFO', tradingsymbol=sell_contracts['tsym'], 
+                        exchange='NFO', tradingsymbol=sell_contract['tsym'], 
                         quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
                         retention='DAY', remarks='ENTRY')
                 

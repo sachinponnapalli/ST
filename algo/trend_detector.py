@@ -6,6 +6,24 @@ from datetime import datetime, timedelta
 from models import *
 
 
+def get_latest_entry(orderbook,type):
+    # Filter only orders with remark=ENTRY and trantype=B
+    filtered = [
+        order for order in orderbook
+        if order.get("remarks") == "ENTRY" and order.get("trantype") == type
+    ]
+    
+    if not filtered:
+        return None  # No matching order found
+    
+    # Sort by ordenttm (order entry time) and return the latest
+    latest_order = max(filtered, key=lambda x: int(x["ordenttm"]))
+    return latest_order
+
+
+
+
+
 
 logger.info("--------- Supertrend Algo Script Started ---------")
 logger.info("current time: " + str(datetime.now()))
@@ -39,6 +57,30 @@ if current_trend != pre_trend:
 
     signal = Signal.select().where(Signal.id == 1)
     if signal.exists():
+        
+        if ((list(signal.dicts()))[0])['trade'] == True:
+            logger.info("Trade executed on previos signal need to take exit before going for new signal")
+            orderbook_data =  api_obj.get_order_book()
+            latest_sell_entry = get_latest_entry(orderbook_data,"S")
+            latest_buy_entry = get_latest_entry(orderbook_data,"B")
+
+            latest_sell_exit_response = api_obj.place_order(buy_or_sell='B', product_type='M',
+                        exchange='NFO', tradingsymbol=latest_sell_entry['tsym'], 
+                        quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
+                        retention='DAY', remarks='EXIT')
+            
+            logger.info(latest_sell_exit_response)
+
+            latest_buy_exit_response = api_obj.place_order(buy_or_sell='S', product_type='M',
+                    exchange='NFO', tradingsymbol=latest_buy_entry['tsym'], 
+                    quantity=75, discloseqty=0 , price_type='MKT', price=0.0,
+                    retention='DAY', remarks='EXIT')
+
+            logger.info(latest_buy_exit_response)
+            
+        else:
+            logger.info('no trade executed on previous signal, updating signal...')
+        
         logger.info("Signal object already exists, updating...")
         query = Signal.update(
                     datetime = last_candle.name,
